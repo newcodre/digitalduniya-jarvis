@@ -1,39 +1,24 @@
-from kivy.app import App
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.button import Button
-from kivy.uix.label import Label
-from kivy.uix.textinput import TextInput
+name: Build Android APK
+on: [push, workflow_dispatch]
 
-class DigitalDuniyaCore(App):
-    def build(self):
-        # Ultra light-weight simple box design
-        layout = BoxLayout(orientation='vertical', padding=20, spacing=10)
+permissions: write-all
 
-        self.lbl = Label(text="DIGITALDUNIYA ROBOTICS ENGINE", font_size='20sp', bold=True)
-        self.status = Label(text="JARVIS STATUS: WAITING FOR COMPONENT", font_size='14sp')
-        
-        # User target input (e.g., arm, car, pump)
-        self.txt_input = TextInput(text="arm", multiline=False, size_hint=(1, 0.2))
-        
-        # Action Trigger Button
-        self.btn = Button(text="⚡ [ ASK JARVIS HOW TO BUILD ]", size_hint=(1, 0.3))
-        self.btn.bind(on_press=self.get_robot_blueprint)
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code Base
+        uses: actions/checkout@v4
 
-        layout.add_widget(self.lbl)
-        layout.add_widget(self.status)
-        layout.add_widget(self.txt_input)
-        layout.add_widget(self.btn)
-        return layout
+      - name: Build APK Using Kivy Container
+        uses: digreatbrian/buildozer-action@v2
+        with:
+          python-version: '3.8'
+          buildozer_cmd: buildozer -v android debug
 
-    def get_robot_blueprint(self, instance):
-        target = self.txt_input.text.strip().lower()
-        if "arm" in target:
-            self.status.text = "🤖 ROBOTIC ARM:\nConnect Servo 1 to Pin 5\nConnect Servo 2 to Pin 6"
-        elif "car" in target:
-            self.status.text = "🏎️ ROVER:\nConnect Left Motor to Pin 10\nConnect Right Motor to Pin 11"
-        else:
-            self.status.text = f"⚙️ SYSTEM READY:\nBlueprint for {target.upper()} compiled!"
-
-if __name__ == '__main__':
-    DigitalDuniyaCore().run()
-    
+      - name: Upload Finished APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: DigitalDuniya-Jarvis-App
+          path: ./bin/*.apk
+          
