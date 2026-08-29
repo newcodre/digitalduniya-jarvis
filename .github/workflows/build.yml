@@ -1,18 +1,34 @@
 name: Build Android APK
 on: [push, workflow_dispatch]
 
-# 🔑 GitHub Framework Settings for Security Verification
 permissions: write-all
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code Base
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Execute Buildozer Engine
-        uses: digreatbrian/buildozer-action@v2
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
-          buildozer_cmd: buildozer android debug
+          python-version: '3.10'
+
+      - name: Install Android Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
+          pip install --upgrade buildozer cython virtualenv
+
+      - name: Compile DigitalDuniya APK
+        run: |
+          yes | buildozer init
+          yes | buildozer -v android debug
+
+      - name: Upload Finished APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: DigitalDuniya-Jarvis-App
+          path: bin/*.apk
           
