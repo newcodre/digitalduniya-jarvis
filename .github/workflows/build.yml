@@ -1,11 +1,17 @@
 name: Build Android APK
 on: [push, workflow_dispatch]
+
+# 🔑 GitHub Framework Settings for Security Verification
+permissions: write-all
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Build with Buildozer
+      - name: Checkout Code Base
+        uses: actions/checkout@v4
+
+      - name: Execute Buildozer Engine
         uses: digreatbrian/buildozer-action@v2
         with:
           buildozer_cmd: buildozer android debug
